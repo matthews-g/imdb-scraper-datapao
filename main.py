@@ -1,16 +1,11 @@
-# This is a sample Python script.
+from datapao_scraper import Scraper
+from datapao_manipulator import DataManipulator
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+toptwenty = Scraper(20)
+toptwenty.full_task()
+print(toptwenty.movie_dataframe)
 
+toptwenty_manipulator = DataManipulator(toptwenty.movie_dataframe)
+toptwenty_manipulator.full_task()
+print(toptwenty_manipulator.movie_dataframe)
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
