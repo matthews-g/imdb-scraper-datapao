@@ -29,36 +29,39 @@ class Scraper:
             "rating": [],
             "number_of_ratings": [],
             "number_of_oscars": [],
-            "title_id": []} # Title_id is needed for oscars, can be removed later!
+            "title_id": []}  # Title_id is needed for oscars, can be removed later!
 
-        self.top_page_data: BeautifulSoup = None
+        self.top_page_data: BeautifulSoup = None # The data of the top page will be stored here.
 
-        self.award_data_list = [] # Dedicated for storing award data
+        self.award_data_list = []  # Dedicated for storing award data.
 
-        self.movie_dataframe = pd.DataFrame() # Storing the data in dataframes
+        self.movie_dataframe = pd.DataFrame()  # Storing the data in dataframe.
 
     def clear_movie_data_dict(self) -> bool:
-        """ Handy function for emptying movie data, returns True if successful! """
+        """ Handy function for emptying movie data """
 
         for key in self.movie_data_dict: self.movie_data_dict[key].clear()
+
+        print("Dictionary of the movie data have been cleaned!")
         return True
 
     def set_top_page_data(self) -> bool:
-        """ Scrapes, parses IMDB top data, returns True if successful! """
+        """ Scrapes, parses IMDB top page data """
 
-        response = requests.get(Scraper.URL, headers=Scraper.REQUEST_HEADERS)
+        response = requests.get(Scraper.URL, headers=Scraper.REQUEST_HEADERS, timeout=3)
         self.top_page_data = BeautifulSoup(response.text, "lxml")
+
+        print("Top page data have been scraped!")
         return True
 
-    def extract_movie_data(self):
+    def extract_movie_data(self) -> bool:
         """ Extracts title, rating, number of ratings from the source of top page. """
 
         if self.top_page_data is None:
-            print("Top page data has not been scraped yet.")
+            print("Top page data have not been scraped yet.")
             return False
 
-        movie_data_list = self.top_page_data.find_all("tr")[
-                          1:self.max_movies+1]  # First result is irrelevant, could be modified if structure changes
+        movie_data_list = self.top_page_data.find_all("tr")[1:self.max_movies + 1]  # First result is irrelevant
 
         for movie_data in movie_data_list:
             title = movie_data.find("td", {"class": "titleColumn"}).a.text
@@ -71,31 +74,31 @@ class Scraper:
             self.movie_data_dict['number_of_ratings'].append(number_of_ratings)
             self.movie_data_dict['title_id'].append(title_id)
 
+        print("Movie data have been extracted from the top page data!")
         return True
 
-    def get_award_data(self):
-        # Oscars are located on a different page unfortunately, they have to be scraped independently..
-        # You need to get the title ids and query each page like this
-        # https://www.imdb.com/title/tt0111161/awards/
-        # From here, you can get the number of awarded oscars...
-        # This function scrapes the awards page, you can scrape oscars independently!
+    def get_award_data(self) -> bool:
+        """ Gets the award data of all the movies, not limited to Oscar wins... """
 
         if not self.movie_data_dict['title_id']:
             print("Title ID list cannot be empty.")
             return False
 
+        award_url_list = [f"https://www.imdb.com/title/{title_id}/awards/" for title_id in
+                          self.movie_data_dict['title_id']]
 
-        award_url_list = [f"https://www.imdb.com/title/{title_id}/awards/" for title_id in self.movie_data_dict['title_id']]
-
-        for award_url in award_url_list:
-            award_data = BeautifulSoup(requests.get(award_url, headers=Scraper.REQUEST_HEADERS).text, "lxml")
+        for award_index, award_url in enumerate(award_url_list):
+            print(f"Scraping award data for movie {award_index+1}/{self.max_movies}")
+            print(f"URL: {award_url}")
+            print("\n")
+            award_data = BeautifulSoup(requests.get(award_url, headers=Scraper.REQUEST_HEADERS, timeout=3).text, "lxml")
             self.award_data_list.append(award_data)
 
+        print("Award data have been scraped for all movies.")
         return True
 
-    def get_oscars(self):
+    def get_oscars(self) -> bool:
         """ Extract the count of oscars from the list of award data! """
-
         # Oscars are ALWAYS located at the top of the page, NO NEED FOR LOOPING!
 
         if not self.award_data_list:
@@ -103,38 +106,31 @@ class Scraper:
             return False
 
         for award_data in self.award_data_list:
-            oscar_data = award_data.find('td', {'class':'title_award_outcome'})
+            oscar_data = award_data.find('td', {'class': 'title_award_outcome'})
             if oscar_data.b.text == 'Winner':
                 self.movie_data_dict['number_of_oscars'].append(int(oscar_data['rowspan']))
             else:
                 self.movie_data_dict['number_of_oscars'].append(0)
 
+        print("Oscars have been extracted!")
         return True
 
-    def set_dataframe(self):
+    def set_dataframe(self) -> bool:
         """ Create the DataFrame and set it as the self.movie_dataframe variable """
 
         self.movie_dataframe = pd.DataFrame(data=self.movie_data_dict)
+        self.movie_dataframe.drop('title_id', inplace=True, axis=1)
+
+        print("Movie dataframe has been created!")
         return True
 
+    def full_task(self) -> bool:
+        """ Executing the full task as requested by Datapao... """
+        self.set_top_page_data()
+        self.extract_movie_data()
+        self.get_award_data()
+        self.get_oscars()
+        self.set_dataframe()
 
-
-
-
-
-
-
-
-
-
-        pass
-
-imdb_scraper = Scraper(20)
-imdb_scraper.set_top_page_data()
-imdb_scraper.extract_movie_data()
-imdb_scraper.get_award_data()
-imdb_scraper.get_oscars()
-imdb_scraper.set_dataframe()
-print(imdb_scraper.movie_dataframe)
-#self=imdb_scraper
-input("ENTER") # breakpoint for the dev!
+        print("All required scraping tasks have been completed.")
+        return True
