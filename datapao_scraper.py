@@ -87,6 +87,8 @@ class Scraper:
         award_url_list = [f"https://www.imdb.com/title/{title_id}/awards/" for title_id in
                           self.movie_data_dict['title_id']]
 
+        print("\n") # The first iteration print will look better :)
+
         for award_index, award_url in enumerate(award_url_list):
             print(f"Scraping award data for movie {award_index+1}/{self.max_movies}")
             print(f"URL: {award_url}")
