@@ -118,7 +118,7 @@ class TestCDataManipulatorFunctions(unittest.TestCase):
         self.assertTrue(data_manipulator_object.sort_dataframe())  # Must return True!
 
     def test_5_saver(self):
-        """ Tests if the saver function for works correctly """
+        """ Tests if the saver function works correctly """
 
         self.assertTrue(data_manipulator_object.save_dataframes())  # Must return True!
 
