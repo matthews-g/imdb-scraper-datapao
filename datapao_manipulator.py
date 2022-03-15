@@ -10,15 +10,15 @@ class DataManipulator:
         # Key = Threshold for won oscar count, Value = Addition to the review score.
         2: 0.3,
         5: 0.5,
-        10: 1, 
-        11: 1.5 # From 11 oscars and beyond, 1.5 points will be added
+        10: 1,
+        11: 1.5  # From 11 oscars and beyond, 1.5 points will be added
     }
 
-    def __init__(self, movie_dataframe: pd.DataFrame):
-        self.movie_dataframe = movie_dataframe
-        self.movie_dataframe_org = movie_dataframe.copy()  # Making a copy of the original DF
+    def __init__(self, movie_dataframe_org: pd.DataFrame):
+        self.movie_dataframe_org = movie_dataframe_org
+        self.movie_dataframe = movie_dataframe_org.copy()  # The manipulation will be on a COPY of the ORG DF
 
-        movie_df_len = len(movie_dataframe)
+        movie_df_len = len(movie_dataframe_org)
         self.movie_dataframe_name = f'imdb_top_{movie_df_len}_manipulated.json'
         self.movie_dataframe_org_name = f'imdb_top_{movie_df_len}_original.json'
 
@@ -83,9 +83,10 @@ class DataManipulator:
         print("Original and manipulated dataframes have been saved as JSON!")
         return True
 
-    def full_task(self):
+    def full_task(self) -> bool:
         """ Executing the full task as requested by Datapao... """
 
+        self.movie_dataframe = self.movie_dataframe_org.copy()  # Very important to reset the DF for repeated execution
         self.penalizer_review()
         self.awarder_oscar()
         self.sort_dataframe()
