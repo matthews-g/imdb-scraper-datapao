@@ -21,7 +21,7 @@ class Scraper:
         'referer': 'https://www.imdb.com/',
         'accept-language': 'hu-HU,hu;q=0.9,en-US;q=0.8,en;q=0.7'}
 
-    def __init__(self, max_movies=20):
+    def __init__(self, max_movies: int = 20):
         self.max_movies = max_movies  # Maximum number of top movies taken into consideration for data!
 
         self.movie_data_dict = {
@@ -31,18 +31,21 @@ class Scraper:
             "number_of_oscars": [],
             "title_id": []}  # Title_id is needed for oscars, can be removed later!
 
-        self.top_page_data: BeautifulSoup = None # The data of the top page will be stored here.
+        self.top_page_data: BeautifulSoup = None  # The data of the top page will be stored here.
 
         self.award_data_list = []  # Dedicated for storing award data.
 
         self.movie_dataframe = pd.DataFrame()  # Storing the data in dataframe.
 
-    def clear_movie_data_dict(self) -> bool:
+    def clear_movie_data(self) -> bool:
         """ Handy function for emptying movie data """
 
-        for key in self.movie_data_dict: self.movie_data_dict[key].clear()
+        self.award_data_list.clear()  # Cleaning award_data_list as well
+        self.top_page_data = None  # Top page data becomes empty!
 
-        print("Dictionary of the movie data have been cleaned!")
+        for key in self.movie_data_dict: self.movie_data_dict[key].clear() # Cleaning all values in movie_data_dict
+
+        print("Movie data lists, dictionaries have been cleaned!")
         return True
 
     def set_top_page_data(self) -> bool:
@@ -128,6 +131,8 @@ class Scraper:
 
     def full_task(self) -> bool:
         """ Executing the full task as requested by Datapao... """
+
+        self.clear_movie_data()  # So the function can be recalled without duplicated data...
         self.set_top_page_data()
         self.extract_movie_data()
         self.get_award_data()
